@@ -29,8 +29,8 @@ const students = [
     notes: [
       {
         id: 1,
-        date: '2025-06-18 14:00',
         content: 'Student needs help with essay structure.',
+        date: '2025-06-18 14:00',
         author: 'Consultant A',
       },
     ],

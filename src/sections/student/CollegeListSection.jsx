@@ -1,4 +1,8 @@
+import { useNavigate } from 'react-router-dom';
+
 export default function CollegeListSection({ colleges = [] }) {
+  const navigate = useNavigate();
+
   return (
     <div className="bg-white p-6 rounded-xl shadow text-sm">
       <h2 className="text-lg font-bold mb-4">🎓 Student’s List of Colleges</h2>
@@ -10,6 +14,7 @@ export default function CollegeListSection({ colleges = [] }) {
           {colleges.map((college) => (
             <div
               key={college.id}
+              onClick={() => navigate(`/colleges/${college.slug}`)}
               className="p-4 bg-gray-50 hover:bg-gray-100 rounded border cursor-pointer"
             >
               <div className="text-base font-semibold">{college.name}</div>

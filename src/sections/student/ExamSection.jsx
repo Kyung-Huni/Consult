@@ -1,13 +1,28 @@
+import { useState } from 'react';
+
+import ExamModal from './ExamModal';
+
 export default function ExamSection({ exams = [] }) {
+  const [items, setItems] = useState(exams);
+  const [showModal, setShowModal] = useState(false);
+
   return (
     <div className="bg-white p-6 rounded-xl shadow text-sm">
-      <h2 className="text-lg font-bold mb-4 flex items-center gap-2">🅰️ Exam Scores</h2>
+      <div className="flex justify-between items-center">
+        <h2 className="text-lg font-bold mb-4 flex items-center gap-2">🅰️ Exam Scores</h2>
+        <button
+          onClick={() => setShowModal(true)}
+          className="text-sm bg-button hover:bg-button-hover text-white rounded border px-3 py-1"
+        >
+          + Add Exam
+        </button>
+      </div>
 
-      {exams.length === 0 ? (
+      {items.length === 0 ? (
         <div className="text-sm text-gray-400">No Exam Data</div>
       ) : (
         <div className="space-y-4">
-          {exams.map((exam) => (
+          {items.map((exam) => (
             <div
               key={exam.id}
               className="bg-yellow-100 p-4 rounded grid sm:grid-cols-6 gap-2 items-center"
@@ -26,6 +41,16 @@ export default function ExamSection({ exams = [] }) {
             </div>
           ))}
         </div>
+      )}
+
+      {showModal && (
+        <ExamModal
+          onClose={() => setShowModal(false)}
+          onSave={(newExam) => {
+            setItems((prev) => [...prev, newExam]);
+            setShowModal(false);
+          }}
+        />
       )}
     </div>
   );
