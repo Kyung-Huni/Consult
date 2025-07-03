@@ -1,78 +1,101 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import axios from '../../api/axios';
 
-export default function ChecklistSection({ checklist = [] }) {
-  const [items, setItems] = useState(checklist);
-  const [newText, setNewText] = useState(''); // Input 값을 상태로 제어, Controlled Component
-  const [showInput, setShowInput] = useState(false); // 입력창 보이기 토글
+export default function ChecklistSection({ studentId }) {
+  const [items, setItems] = useState([]);
+  const [newTitle, setNewTitle] = useState('');
 
-  const toggleItem = (id) => {
-    setItems((prev) => prev.map((item) => (item.id === id ? { ...item, done: !item.done } : item)));
+  const fetchChecklist = async () => {
+    try {
+      const res = await axios.get(`/students/${studentId}/checklist`);
+      setItems(res.data);
+    } catch (err) {
+      console.error('Checklist 불러오기 실패:', err);
+    }
   };
 
-  const addItem = () => {
-    if (!newText.trim()) return; // 문자열 앞뒤 공백 제거 (공백 무시 조건)
-    const newItem = {
-      id: Date.now(),
-      text: newText,
-      done: false,
-    };
-    setItems((prev) => [...prev, newItem]);
-    setNewText('');
+  const handleAdd = async () => {
+    if (!newTitle.trim()) return;
+    try {
+      await axios.post(`/students/${studentId}/checklist`, {
+        title: newTitle,
+      });
+      setNewTitle('');
+      fetchChecklist();
+    } catch (err) {
+      console.error('항목 추가 실패:', err);
+    }
   };
 
-  const deleteItem = (id) => {
-    setItems((prev) => prev.filter((item) => item.id !== id));
+  const handleToggle = async (itemId, currentState) => {
+    try {
+      await axios.patch(`/students/${studentId}/checklist/${itemId}`, {
+        isCompleted: !currentState,
+      });
+      fetchChecklist();
+    } catch (err) {
+      console.error('업데이트 실패:', err);
+    }
   };
+
+  const handleDelete = async (itemId) => {
+    try {
+      await axios.delete(`/students/${studentId}/checklist/${itemId}`);
+      fetchChecklist();
+    } catch (err) {
+      console.error('삭제 실패:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchChecklist();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [studentId]);
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-bold">📋 My Checklist</h2>
+    <div className="bg-white p-6 rounded-xl shadow space-y-4">
+      <h2 className="text-lg font-bold mb-2">📝 Checklist</h2>
+
+      <div className="flex gap-2">
+        <input
+          value={newTitle}
+          onChange={(e) => setNewTitle(e.target.value)}
+          placeholder="할 일 입력..."
+          className="flex-1 border px-3 py-1 rounded"
+        />
         <button
-          onClick={() => setShowInput((prev) => !prev)}
-          className="bg-button hover:bg-button-hover text-white px-3 py-1 rounded text-sm"
+          onClick={handleAdd}
+          className="bg-blue-600 text-white px-3 py-1 rounded"
         >
-          {showInput ? 'Cancel' : '+ Add Checklist'}
+          추가
         </button>
       </div>
 
-      {items.length === 0 ? (
-        <div className="text-sm text-gray-400">No checklist items.</div>
-      ) : (
-        <ul className="space-y-2 text-sm mb-4">
-          {items.map((item) => (
-            <li key={item.id} className="flex items-center gap-2">
-              <input type="checkbox" checked={item.done} onChange={() => toggleItem(item.id)} />
-              <span className={item.done ? 'line-through text-gray-400' : ''}>{item.text}</span>
-              {item.due && <span className="ml-auto text-xs text-gray-400">Due: {item.due}</span>}
-              <button
-                onClick={() => deleteItem(item.id)}
-                className="text-red-400 hover:text-red-600 text-sm"
+      <ul className="space-y-2">
+        {items.map((item) => (
+          <li key={item.id} className="flex justify-between items-center">
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={item.isCompleted}
+                onChange={() => handleToggle(item.id, item.isCompleted)}
+              />
+              <span
+                className={item.isCompleted ? 'line-through text-gray-400' : ''}
               >
-                delete
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
+                {item.title}
+              </span>
+            </label>
 
-      {showInput && (
-        <div className="flex flex-wrap gap-2 w-full">
-          <input
-            type="text"
-            value={newText}
-            onChange={(e) => setNewText(e.target.value)}
-            className="flex-1 min-w-0 border rounded px-2 py-1 text-sm"
-            placeholder="새 항목 입력"
-          />
-          <button
-            onClick={addItem}
-            className="shrink-0 bg-blue-500 text-white px-3 py-1 rounded text-sm"
-          >
-            추가
-          </button>
-        </div>
-      )}
+            <button
+              onClick={() => handleDelete(item.id)}
+              className="text-sm text-red-500 hover:underline"
+            >
+              삭제
+            </button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

@@ -1,0 +1,86 @@
+import { Router } from 'express';
+import { prisma } from '../prisma';
+
+import { validateParams } from '../middlewares/validateParams';
+import { validateBody } from '../middlewares/validateBody';
+import { asyncHandler } from '../utils/asyncHandler';
+
+import { getStudentParamsSchema } from '../schemas/student/getStudentParamsSchema';
+import { createMeetingSchema } from '../schemas/meeting/createMeetingSchema';
+
+const router = Router({ mergeParams: true });
+
+// GET /students/:id/meetings
+router.get(
+  '/',
+  validateParams(getStudentParamsSchema),
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const meetings = await prisma.meeting.findMany({
+      where: { studentId: id },
+      orderBy: { date: 'desc' },
+    });
+    res.json(meetings);
+  })
+);
+
+// POST /students/:id/meetings
+router.post(
+  '/',
+  validateParams(getStudentParamsSchema),
+  validateBody(createMeetingSchema),
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { title, note, date } = req.body;
+
+    const newMeeting = await prisma.meeting.create({
+      data: {
+        studentId: id,
+        title,
+        note,
+        date: new Date(date),
+      },
+    });
+
+    res.status(201).json(newMeeting);
+  })
+);
+
+// PATCH /students/:id/meetings/:meetingId
+router.patch(
+  '/:id',
+  validateParams(getStudentParamsSchema),
+  validateBody(createMeetingSchema), // 전체 필드 수정 기준
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { title, note, date } = req.body;
+
+    const updated = await prisma.meeting.update({
+      where: { id: id },
+      data: {
+        title,
+        note,
+        date: new Date(date),
+      },
+    });
+
+    res.json(updated);
+  })
+);
+
+// DELETE /students/:id/meetings/:meetingId
+router.delete(
+  '/:id',
+  validateParams(getStudentParamsSchema),
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    await prisma.meeting.delete({
+      where: { id: id },
+    });
+
+    res.status(204).send();
+  })
+);
+
+export default router;

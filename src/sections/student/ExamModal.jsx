@@ -13,7 +13,7 @@ export default function ExamModal({ onClose, onSave }) {
   const handleScoreChange = (subject, value) => {
     setScores((prev) => ({
       ...prev,
-      [subject]: value,
+      [subject]: value.trim(),
     }));
   };
 
@@ -21,7 +21,6 @@ export default function ExamModal({ onClose, onSave }) {
     if (!date) return;
 
     const newExam = {
-      id: Date.now(),
       type,
       date,
       scores,
@@ -77,7 +76,10 @@ export default function ExamModal({ onClose, onSave }) {
         ))}
 
         <div className="flex justify-end gap-2 pt-4">
-          <button onClick={onClose} className="px-3 py-1 text-sm border rounded">
+          <button
+            onClick={onClose}
+            className="px-3 py-1 text-sm border rounded"
+          >
             Cancel
           </button>
           <button

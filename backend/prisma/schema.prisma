@@ -1,0 +1,133 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  name          String
+  password      String
+  role          Role     @default(USER)
+  refreshToken  String?
+  createdAt     DateTime @default(now())
+  reports       Report[]
+}
+
+model Student {
+  id                String    @id @default(cuid())
+  name              String
+  email             String    @unique
+  phone             String?
+  school            String?
+  grade             String?
+  allowLogin        Boolean   @default(true)
+  canEditChecklist  Boolean @default(true)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  // 연결 테이블
+  checklistItems ChecklistItem[]
+  meeting        Meeting[]
+  conversation   Conversation[]
+  colleges       StudentCollege[]
+  notes          StudentNote[]
+  exams          Exam[]
+}
+
+model ChecklistItem {
+  id          String    @id @default(cuid())
+  studentId   String 
+  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  title       String
+  isCompleted Boolean   @default(false)
+  dueDate     DateTime?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Meeting {
+  id         String   @id @default(cuid())
+  title      String
+  note       String?
+  date       DateTime
+  studentId  String
+  student    Student  @relation(fields: [studentId], references: [id])
+  createdAt  DateTime @default(now())
+}
+
+model Conversation {
+  id        String   @id @default(cuid())
+  student   Student  @relation(fields: [studentId], references: [id])
+  studentId String
+  sender    String
+  text      String
+  createdAt DateTime @default(now())
+}
+
+model College {
+  id        String      @id @default(cuid())
+  name      String
+  slug      String      @unique
+  location  String
+  
+  // 연결 테이블
+  students  StudentCollege[]  
+}
+
+model StudentCollege {
+  id         String   @id @default(cuid())
+  student    Student  @relation(fields: [studentId], references: [id])
+  studentId  String
+
+  college    College  @relation(fields: [collegeId], references: [id])
+  collegeId  String
+
+  status     String   // 예: Applied, Rejected, Accepted
+
+  isSuggested Boolean @default(false) // 추천 여부 플래그
+  createdAt  DateTime @default(now())
+
+  @@unique([studentId, collegeId]) // 중복방지
+
+  @@map("StudentCollege")
+}
+
+model StudentNote {
+  id        String   @id @default(cuid())
+  student   Student  @relation(fields: [studentId], references: [id])
+  studentId String
+
+  content   String
+  createdAt DateTime @default(now())
+}
+
+model Exam {
+  id        String   @id @default(cuid())
+  student   Student  @relation(fields: [studentId], references: [id])
+  studentId String
+  type      String
+  date      DateTime
+  scores    Json
+  createdAt DateTime @default(now())
+}
+
+model Report {
+  id        String   @id @default(uuid())
+  question  String
+  answer    String
+  userId    String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+enum Role {
+  USER
+  ADMIN
+}

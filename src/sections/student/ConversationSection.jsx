@@ -1,21 +1,38 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import axios from '../../api/axios';
 
-export default function ConversationSection({ conversation = [] }) {
-  const [items, setItems] = useState(conversation);
+export default function ConversationSection({ studentId }) {
+  const [items, setItems] = useState([]);
   const [newText, setNewText] = useState('');
 
-  const addMessage = () => {
+  // ✅ 초기 메시지 불러오기
+  useEffect(() => {
+    const fetchMessages = async () => {
+      try {
+        const res = await axios.get(`/students/${studentId}/conversations`);
+        setItems(res.data);
+      } catch (err) {
+        console.error('대화 불러오기 실패:', err);
+      }
+    };
+    fetchMessages();
+  }, [studentId]);
+
+  // ✅ 메시지 추가
+  const addMessage = async () => {
     if (!newText.trim()) return;
 
-    const newMessage = {
-      id: Date.now(),
-      sender: 'You',
-      text: newText,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    };
+    try {
+      const res = await axios.post(`/students/${studentId}/conversations`, {
+        sender: 'You',
+        text: newText,
+      });
 
-    setItems((prev) => [...prev, newMessage]);
-    setNewText('');
+      setItems((prev) => [...prev, res.data]);
+      setNewText('');
+    } catch (err) {
+      console.error('메시지 전송 실패:', err);
+    }
   };
 
   return (
@@ -28,15 +45,23 @@ export default function ConversationSection({ conversation = [] }) {
           {items.map((item) => (
             <div
               key={item.id}
-              className={`flex ${item.sender === 'You' ? 'justify-end' : 'justify-start'}`}
+              className={`flex ${
+                item.sender === 'You' ? 'justify-end' : 'justify-start'
+              }`}
             >
               <div
                 className={`rounded-lg p-2 max-w-[70%] ${
-                  item.sender === 'You' ? 'bg-indigo-100 text-right' : 'bg-gray-100'
+                  item.sender === 'You'
+                    ? 'bg-indigo-100 text-right'
+                    : 'bg-gray-100'
                 }`}
               >
                 <div className="text-xs text-gray-500 mb-1">
-                  {item.sender} · {item.time}
+                  {item.sender} ·{' '}
+                  {new Date(item.createdAt).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
                 </div>
                 <div className="text-gray-800">{item.text}</div>
               </div>

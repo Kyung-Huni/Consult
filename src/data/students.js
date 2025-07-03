@@ -10,8 +10,7 @@ const students = [
     phone: '010-1234-5678',
     access: {
       allowLogin: true,
-      canEditChecklist: false,
-      canViewColleges: true,
+      allowChecklistEdit: false,
     },
     colleges: [
       { id: 1, status: 'Applied' },

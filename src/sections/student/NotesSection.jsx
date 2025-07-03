@@ -1,32 +1,56 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import axios from '../../api/axios';
 
-export default function NotesSection({ notes = [] }) {
-  const [items, setItems] = useState(notes);
+export default function NotesSection({ studentId }) {
+  const [items, setItems] = useState([]);
   const [newNote, setNewNote] = useState('');
   const [showInput, setShowInput] = useState(false);
 
-  const addNote = () => {
-    if (!newNote.trim()) return;
-
-    const newItem = {
-      id: Date.now(),
-      content: newNote.trim(),
-      date: new Date().toLocaleString(),
-      author: 'You',
+  // 🔄 노트 목록 불러오기
+  useEffect(() => {
+    const fetchNotes = async () => {
+      try {
+        const res = await axios.get(`/students/${studentId}/notes`);
+        setItems(res.data);
+      } catch (err) {
+        console.error('노트 불러오기 실패:', err);
+      }
     };
 
-    setItems((prev) => [...prev, newItem]);
-    setNewNote('');
+    fetchNotes();
+  }, [studentId]);
+
+  // ➕ 노트 추가
+  const addNote = async () => {
+    if (!newNote.trim()) return;
+    try {
+      const res = await axios.post(`/students/${studentId}/notes`, {
+        content: newNote.trim(),
+      });
+      setItems((prev) => [res.data, ...prev]);
+      setNewNote('');
+      setShowInput(false);
+    } catch (err) {
+      console.error('노트 추가 실패:', err);
+    }
   };
 
-  const deleteNote = (id) => {
-    setItems((prev) => prev.filter((item) => item.id !== id));
+  // ❌ 노트 삭제
+  const deleteNote = async (id) => {
+    try {
+      await axios.delete(`/students/${studentId}/notes/${id}`);
+      setItems((prev) => prev.filter((item) => item.id !== id));
+    } catch (err) {
+      console.error('노트 삭제 실패:', err);
+    }
   };
 
   return (
     <div className="bg-white p-6 rounded-xl shadow text-sm space-y-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-lg font-bold flex items-center gap-2">📁 Notes / Files / Emails</h2>
+        <h2 className="text-lg font-bold flex items-center gap-2">
+          📁 Notes / Files / Emails
+        </h2>
         <button
           className="bg-button hover:bg-button-hover text-sm text-white border px-3 py-1 rounded"
           onClick={() => setShowInput((prev) => !prev)}
@@ -40,10 +64,14 @@ export default function NotesSection({ notes = [] }) {
       ) : (
         <div className="space-y-3">
           {items.map((note) => (
-            <div key={note.id} className="bg-yellow-100 p-3 rounded shadow-sm relative">
-              <div className="text-xs text-gray-600 mb-1">Saved {note.date}</div>
+            <div
+              key={note.id}
+              className="bg-yellow-100 p-3 rounded shadow-sm relative"
+            >
+              <div className="text-xs text-gray-600 mb-1">
+                Saved {new Date(note.createdAt).toLocaleString()}
+              </div>
               <div className="text-gray-800">{note.content}</div>
-              <div className="text-xs text-gray-500 mt-1">Note by: {note.author}</div>
               <button
                 onClick={() => deleteNote(note.id)}
                 className="absolute right-2 top-2 text-danger hover:text-danger-hover text-sm"

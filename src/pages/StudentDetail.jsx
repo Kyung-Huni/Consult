@@ -13,26 +13,28 @@ import AccessControlToggle from '../sections/student/AccessControlToggle';
 
 // Data Binding
 import { useParams } from 'react-router-dom';
-import students from '../data/students';
-import meetings from '../data/meetings';
-import colleges from '../data/colleges';
+
+import { useEffect, useState } from 'react';
+import axios from '../api/axios';
 
 export default function StudentDetail() {
-  const { id } = useParams();
-  const student = students.find((s) => s.id === parseInt(id));
+  const { id: studentId } = useParams();
+  const [student, setStudent] = useState(null);
 
-  if (!student) return <div>Student not found</div>;
+  useEffect(() => {
+    const fetchStudent = async () => {
+      try {
+        const res = await axios.get(`/students/${studentId}`);
+        setStudent(res.data);
+      } catch (err) {
+        console.error('학생 정보 불러오기 실패:', err);
+      }
+    };
 
-  const studentMeetings = (student.meetings || [])
-    .map((id) => meetings.find((m) => m.id === id))
-    .filter(Boolean);
+    fetchStudent();
+  }, [studentId]);
 
-  const studentColleges = (student.colleges || [])
-    .map(({ id, status }) => {
-      const college = colleges.find((c) => c.id === id);
-      return college ? { ...college, status } : null;
-    })
-    .filter(Boolean);
+  if (!student) return <div>Loading...</div>;
 
   return (
     <div className="space-y-6">
@@ -41,20 +43,20 @@ export default function StudentDetail() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* 왼쪽 섹션 */}
         <div className="space-y-6">
-          <ChecklistSection checklist={student.checklist} />
+          <ChecklistSection studentId={student.id} />
           <StudentToDoSection todo={student.todo} />
-          <MeetingSection meetings={studentMeetings} />
-          <ConversationSection conversation={student.conversation} />
-          <CollegeListSection colleges={studentColleges} />
+          <MeetingSection studentId={student.id} />
+          <ConversationSection studentId={student.id} />
+          <CollegeListSection studentId={student.id} />
         </div>
 
         {/* 오른쪽 섹션 */}
         <div className="space-y-6">
-          <NotesSection notes={student.notes} />
-          <ExamSection exams={student.exams} />
+          <NotesSection studentId={student.id} />
+          <ExamSection studentId={student.id} />
           <TimeTrackerSection times={student.times} />
           <ContactInfoSection email={student.email} phone={student.phone} />
-          <AccessControlToggle access={student.access} />
+          <AccessControlToggle access={student.access} studentId={student.id} />
         </div>
       </div>
     </div>
