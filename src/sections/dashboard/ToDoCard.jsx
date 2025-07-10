@@ -1,21 +1,24 @@
-export default function ToDoCard() {
-  const todos = [
-    { task: 'Send report to Student A', done: true },
-    { task: 'Prepare Meeting - Student B', done: false },
-    { task: 'Check Report - Student C', done: false },
-  ];
-
+export default function ToDoCard({ todos }) {
   return (
     <div className="bg-white p-6 rounded-xl shadow">
-      <h2 className="text-lg font-bold mb-4">My To-do Items</h2>
-      <ul className="space-y-2">
-        {todos.map((t, idx) => (
-          <li key={idx} className="flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={t.done} readOnly />
-            <span className={t.done ? 'line-through text-gray-400' : ''}>{t.task}</span>
-          </li>
-        ))}
-      </ul>
+      <h2 className="text-lg font-bold mb-4">📌 학생 할 일</h2>
+      {todos.length === 0 ? (
+        <p className="text-sm text-gray-400">할 일이 없습니다.</p>
+      ) : (
+        <ul className="space-y-2 text-sm">
+          {todos.map((t) => (
+            <li key={t.id} className="flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                <input type="checkbox" checked={t.done} readOnly />
+                <span className={t.done ? 'line-through text-gray-400' : ''}>
+                  {t.text}
+                </span>
+              </div>
+              <span className="text-xs text-gray-500">{t.studentName}</span>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

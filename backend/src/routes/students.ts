@@ -11,7 +11,7 @@ import { createStudentSchema } from '../schemas/student/createStudentSchema';
 import { updateAccessSchema } from '../schemas/student/updateAccessSchema';
 import { getStudentParamsSchema } from '../schemas/student/getStudentParamsSchema';
 
-const router = Router();
+const router = Router({ mergeParams: true });
 
 router.use(authenticateJWT);
 
@@ -51,10 +51,31 @@ router.get(
 
     if (!student) {
       res.status(404).json({ error: 'Student not found' });
-      return;
     }
 
     res.json(student);
+  })
+);
+
+router.get(
+  '/:id/access',
+  validateParams(getStudentParamsSchema),
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    const access = await prisma.student.findUnique({
+      where: { id },
+      select: {
+        allowLogin: true,
+        canEditChecklist: true,
+      },
+    });
+
+    if (!access) {
+      res.status(404).json({ message: 'Student not found' });
+    }
+
+    res.json(access);
   })
 );
 

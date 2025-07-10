@@ -1,34 +1,49 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import axios from '../../api/axios';
 
 const EXAM_SUBJECTS = {
   SAT: ['Math', 'EBRW'],
   ACT: ['English', 'Math', 'Reading', 'Science', 'Writing'],
 };
 
-export default function ExamModal({ onClose, onSave }) {
+export default function ExamModal({ studentId, onClose, onSave }) {
   const [type, setType] = useState('SAT');
   const [date, setDate] = useState('');
   const [scores, setScores] = useState({});
 
   const handleScoreChange = (subject, value) => {
+    console.log('입력 변경됨:', subject, value);
+
     setScores((prev) => ({
       ...prev,
       [subject]: value.trim(),
     }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!date) return;
 
-    const newExam = {
+    const safeScores = JSON.parse(JSON.stringify(scores)); // ✅ 강제 JSON화
+    const payload = {
       type,
       date,
-      scores,
+      scores: safeScores,
     };
 
-    onSave(newExam);
-    onClose();
+    console.log('최종 전송 payload:', payload);
+
+    try {
+      await axios.post(`/students/${studentId}/exams`, payload);
+      onSave();
+      onClose();
+    } catch (err) {
+      console.error('시험 저장 실패:', err);
+    }
   };
+
+  useEffect(() => {
+    console.log('[실시간 확인] scores 상태:', scores);
+  }, [scores]);
 
   return (
     <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
@@ -41,7 +56,7 @@ export default function ExamModal({ onClose, onSave }) {
             value={type}
             onChange={(e) => {
               setType(e.target.value);
-              setScores({}); // 시험 종류 변경시 점수 초기화
+              setScores((prev) => ({ ...prev }));
             }}
             className="w-full border rounded px-2 py-1 text-sm"
           >

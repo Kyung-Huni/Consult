@@ -1,9 +1,24 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import ExamModal from './ExamModal';
+import axios from '../../api/axios';
 
-export default function ExamSection({ exams = [] }) {
-  const [items, setItems] = useState(exams);
+export default function ExamSection({ studentId }) {
+  const [items, setItems] = useState([]);
   const [showModal, setShowModal] = useState(false);
+
+  const fetchExams = async () => {
+    try {
+      const res = await axios.get(`/students/${studentId}/exams`);
+      setItems(res.data);
+    } catch (err) {
+      console.error('시험 데이터 불러오기 실패:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchExams();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [studentId]);
 
   return (
     <div className="bg-white p-6 rounded-xl shadow text-sm">
@@ -45,7 +60,7 @@ export default function ExamSection({ exams = [] }) {
               >
                 <div className="font-semibold col-span-1 text-sm">
                   {exam.type}
-                  <div className="text-xs">{exam.date}</div>
+                  <div className="text-xs">{exam.date.slice(0, 10)}</div>
                 </div>
 
                 {Object.entries(parsedScores).map(([subject, score]) => (
@@ -65,11 +80,9 @@ export default function ExamSection({ exams = [] }) {
 
       {showModal && (
         <ExamModal
+          studentId={studentId}
           onClose={() => setShowModal(false)}
-          onSave={(newExam) => {
-            setItems((prev) => [...prev, newExam]);
-            setShowModal(false);
-          }}
+          onSave={fetchExams}
         />
       )}
     </div>

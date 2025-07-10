@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 import ValidationError from '../errors/ValidationError';
-import UserNotFoundError from '../errors/UserNotFoundError';
+import UserNotFoundError from '../errors/NotFoundError';
 
 export function handlePrismaError(error: unknown): never {
   if (error instanceof Prisma.PrismaClientKnownRequestError) {

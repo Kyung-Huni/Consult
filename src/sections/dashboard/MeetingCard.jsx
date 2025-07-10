@@ -1,24 +1,27 @@
-export default function MeetingCard() {
-  const meetings = [
-    { date: 'Jun 1', time: '10:00 AM', student: 'Student B' },
-    { date: 'Jun 8', time: '13:00 PM', student: 'Student A' },
-  ];
-
+export default function MeetingCard({ meetings }) {
   return (
     <div className="bg-white p-6 rounded-xl shadow">
-      <h2 className="text-lg font-bold mb-4">Upcoming Meetings</h2>
-      <ul className="space-y-3">
-        {meetings.map((m, idx) => (
-          <li key={idx} className="flex items-center justify-between text-sm">
-            <div className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded font-medium w-14 text-center">
-              {m.date}
-            </div>
-            <div>
-              {m.time} <span className="text-gray-500">with {m.student}</span>
-            </div>
-          </li>
-        ))}
-      </ul>
+      <h2 className="text-lg font-bold mb-4">📅 다가오는 상담 일정</h2>
+      {meetings.length === 0 ? (
+        <p className="text-sm text-gray-400">예정된 상담이 없습니다.</p>
+      ) : (
+        <ul className="space-y-2 text-sm">
+          {meetings.map((m) => (
+            <li
+              key={m.id}
+              className="flex justify-between items-center border-b pb-2"
+            >
+              <div>
+                <div className="font-medium">{m.title}</div>
+                <div className="text-xs text-gray-500">
+                  {new Date(m.startTime).toLocaleString()}
+                </div>
+              </div>
+              <div className="text-xs text-gray-500">{m.studentName}</div>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

@@ -1,3 +1,4 @@
+// MeetingsSection.jsx (템플릿 선택 시 제목+메모 자동 입력)
 import { useEffect, useState } from 'react';
 import axios from '../../api/axios';
 
@@ -9,9 +10,16 @@ export default function MeetingsSection({ studentId }) {
   const [time, setTime] = useState('');
   const [note, setNote] = useState('');
 
+  const [templates, setTemplates] = useState([]);
+  const [selectedTemplate, setSelectedTemplate] = useState('');
+
+  useEffect(() => {
+    axios.get('/templates?type=meeting').then((res) => setTemplates(res.data));
+  }, []);
+
   const fetchMeetings = async () => {
     try {
-      const res = await axios.get(`/students/${studentId}/meetings`);
+      const res = await axios.get(`/students/${studentId}/meeting`);
       setItems(res.data);
     } catch (err) {
       console.error(
@@ -24,10 +32,13 @@ export default function MeetingsSection({ studentId }) {
   const addMeeting = async () => {
     if (!title.trim() || !date || !time) return;
     try {
-      await axios.post(`/students/${studentId}/meetings`, {
+      await axios.post(`/students/${studentId}/meeting`, {
         title,
         note,
-        date: new Date(date + 'T' + time).toISOString(),
+        startTime: new Date(date + 'T' + time).toISOString(),
+        endTime: new Date(
+          new Date(date + 'T' + time).getTime() + 30 * 60000
+        ).toISOString(),
       });
       setShowModal(false);
       setTitle('');
@@ -42,7 +53,7 @@ export default function MeetingsSection({ studentId }) {
 
   const deleteMeeting = async (id) => {
     try {
-      await axios.delete(`/students/${studentId}/meetings/${id}`);
+      await axios.delete(`/students/${studentId}/meeting/${id}`);
       fetchMeetings();
     } catch (err) {
       console.error('📛 상담 삭제 실패:', err.response?.data || err.message);
@@ -51,6 +62,7 @@ export default function MeetingsSection({ studentId }) {
 
   useEffect(() => {
     fetchMeetings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [studentId]);
 
   return (
@@ -70,12 +82,12 @@ export default function MeetingsSection({ studentId }) {
       ) : (
         <ul className="space-y-3 text-sm">
           {[...items]
-            .sort((a, b) => new Date(a.date) - new Date(b.date))
+            .sort((a, b) => new Date(a.startTime) - new Date(b.startTime))
             .map((item) => (
               <li key={item.id} className="border p-3 rounded relative">
                 <div className="font-semibold">{item.title}</div>
                 <div className="text-gray-500 text-xs">
-                  {new Date(item.date).toLocaleString()}
+                  {new Date(item.startTime).toLocaleString()}
                 </div>
                 {item.note && (
                   <div className="mt-1 text-gray-700">{item.note}</div>
@@ -95,6 +107,29 @@ export default function MeetingsSection({ studentId }) {
         <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
           <div className="bg-white w-full max-w-md rounded-xl shadow-lg p-6 space-y-4">
             <h3 className="text-lg font-bold">Add New Meeting</h3>
+
+            <div className="flex gap-2 items-center">
+              <select
+                value={selectedTemplate}
+                onChange={(e) => {
+                  const tpl = templates.find((t) => t.id === e.target.value);
+                  if (tpl) {
+                    setSelectedTemplate(tpl.id);
+                    setTitle(tpl.title);
+                    setNote(tpl.content);
+                  }
+                }}
+                className="border rounded px-2 py-1 text-sm w-full"
+              >
+                <option value="">+ 템플릿 선택</option>
+                {templates.map((tpl) => (
+                  <option key={tpl.id} value={tpl.id}>
+                    {tpl.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <input
               type="text"
               placeholder="Meeting Title"

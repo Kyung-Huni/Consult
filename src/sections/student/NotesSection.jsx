@@ -1,3 +1,4 @@
+// NotesSection.jsx (템플릿 적용 추가)
 import { useEffect, useState } from 'react';
 import axios from '../../api/axios';
 
@@ -6,7 +7,13 @@ export default function NotesSection({ studentId }) {
   const [newNote, setNewNote] = useState('');
   const [showInput, setShowInput] = useState(false);
 
-  // 🔄 노트 목록 불러오기
+  const [templates, setTemplates] = useState([]);
+  const [selectedTemplate, setSelectedTemplate] = useState('');
+
+  useEffect(() => {
+    axios.get('/templates?type=note').then((res) => setTemplates(res.data));
+  }, []);
+
   useEffect(() => {
     const fetchNotes = async () => {
       try {
@@ -20,7 +27,6 @@ export default function NotesSection({ studentId }) {
     fetchNotes();
   }, [studentId]);
 
-  // ➕ 노트 추가
   const addNote = async () => {
     if (!newNote.trim()) return;
     try {
@@ -35,7 +41,6 @@ export default function NotesSection({ studentId }) {
     }
   };
 
-  // ❌ 노트 삭제
   const deleteNote = async (id) => {
     try {
       await axios.delete(`/students/${studentId}/notes/${id}`);
@@ -85,6 +90,26 @@ export default function NotesSection({ studentId }) {
 
       {showInput && (
         <div className="pt-2 border-t space-y-2">
+          <div className="flex gap-2 items-center">
+            <select
+              value={selectedTemplate}
+              onChange={(e) => {
+                const tpl = templates.find((t) => t.id === e.target.value);
+                if (tpl) {
+                  setSelectedTemplate(tpl.id);
+                  setNewNote(tpl.content);
+                }
+              }}
+              className="border rounded px-2 py-1 text-sm w-full"
+            >
+              <option value="">+ 템플릿 선택</option>
+              {templates.map((tpl) => (
+                <option key={tpl.id} value={tpl.id}>
+                  {tpl.title}
+                </option>
+              ))}
+            </select>
+          </div>
           <textarea
             className="w-full border rounded p-2"
             rows={3}

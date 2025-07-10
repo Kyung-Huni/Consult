@@ -63,6 +63,7 @@ function App() {
             <Route path="/meetings" element={<Meetings />} />
             <Route path="/meetings/:id" element={<MeetingDetail />} />
             <Route path="/templates" element={<Templates />} />
+            <Route path="/templates/new/:type" element={<TemplateEditor />} />
             <Route
               path="/templates/edit/:type/:id"
               element={<TemplateEditor />}

@@ -15,7 +15,7 @@ import { asyncHandler } from '../utils/asyncHandler';
 import { generateTokens } from '../utils/generateTokens';
 
 // Errors
-import UserNotFoundError from '../errors/UserNotFoundError';
+import NotFoundError from '../errors/NotFoundError';
 import EmailAlreadyExistsError from '../errors/EmailAlreadyExistsError';
 import InvalidCredentailError from '../errors/InvalidCredentialError';
 import EnvError from '../errors/EnvError';
@@ -56,7 +56,7 @@ router.post(
 
       const user = await prisma.user.findUnique({ where: { email } });
       if (!user) {
-        throw new UserNotFoundError();
+        throw new NotFoundError({ message: 'User not found' });
       }
 
       const isMatch = await bcrypt.compare(password, user.password);
@@ -165,7 +165,7 @@ router.post(
     }
 
     const user = await prisma.user.findUnique({ where: { id: payload.id } });
-    if (!user) throw new UserNotFoundError();
+    if (!user) throw new NotFoundError({ message: 'User not found' });
 
     if (user.refreshToken !== token) {
       throw new InvalidCredentailError({

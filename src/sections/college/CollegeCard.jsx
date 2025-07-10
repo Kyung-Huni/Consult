@@ -1,15 +1,21 @@
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 export default function CollegeCard({ college }) {
+  const navigate = useNavigate();
+
   return (
-    <Link to={`/colleges/${college.slug}`}>
-      <div className="bg-white p-4 rounded shadow hover:shadow-lg transition">
-        <div className="text-xl font-semibold">{college.name}</div>
-        <div className="text-sm text-gray-500">{college.location}</div>
-        <div className="mt-2 text-xs text-gray-600">
-          Type: {college.type} | 입학률: {college.acceptanceRate}
-        </div>
-      </div>
-    </Link>
+    <div
+      onClick={() => navigate(`/colleges/${college.id}`)}
+      className="p-4 border rounded shadow cursor-pointer hover:bg-gray-50 transition"
+    >
+      <h2 className="font-bold text-lg">{college.school.name}</h2>
+      <p className="text-sm text-gray-600">
+        {college.school.city}, {college.school.state}
+      </p>
+      <p className="text-xs">
+        입학률:{' '}
+        {college.latest?.admissions?.admission_rate?.overall ?? '정보 없음'}
+      </p>
+    </div>
   );
 }

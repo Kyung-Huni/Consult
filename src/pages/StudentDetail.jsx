@@ -44,7 +44,7 @@ export default function StudentDetail() {
         {/* 왼쪽 섹션 */}
         <div className="space-y-6">
           <ChecklistSection studentId={student.id} />
-          <StudentToDoSection todo={student.todo} />
+          <StudentToDoSection studentId={student.id} />
           <MeetingSection studentId={student.id} />
           <ConversationSection studentId={student.id} />
           <CollegeListSection studentId={student.id} />
@@ -54,9 +54,9 @@ export default function StudentDetail() {
         <div className="space-y-6">
           <NotesSection studentId={student.id} />
           <ExamSection studentId={student.id} />
-          <TimeTrackerSection times={student.times} />
-          <ContactInfoSection email={student.email} phone={student.phone} />
-          <AccessControlToggle access={student.access} studentId={student.id} />
+          <TimeTrackerSection studentId={student.id} />
+          <ContactInfoSection studentId={student.id} />
+          <AccessControlToggle studentId={student.id} />
         </div>
       </div>
     </div>

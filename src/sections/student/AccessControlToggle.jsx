@@ -1,17 +1,29 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios from '../../api/axios';
 
-export default function AccessControlToggle({ access = {}, studentId }) {
+export default function AccessControlToggle({ studentId }) {
   const [settings, setSettings] = useState({
-    allowLogin: access.allowLogin ?? false,
-    allowChecklistEdit: access.allowChecklistEdit ?? false,
+    allowLogin: false,
+    allowChecklistEdit: false,
   });
+
+  const fetchAccessControl = async () => {
+    try {
+      const res = await axios.get(`/students/${studentId}/access`);
+      setSettings({
+        allowLogin: res.data.allowLogin ?? false,
+        allowChecklistEdit: res.data.allowChecklistEdit ?? false,
+      });
+    } catch (err) {
+      console.error('Access 설정 불러오기 실패:', err);
+    }
+  };
 
   const toggleSetting = async (key) => {
     const newValue = !settings[key];
 
     try {
-      await axios.patch(`/student/${studentId}/access`, {
+      await axios.patch(`/students/${studentId}/access`, {
         [key]: newValue,
       });
 
@@ -23,6 +35,11 @@ export default function AccessControlToggle({ access = {}, studentId }) {
       console.error('Access 설정 변경 실패:', err);
     }
   };
+
+  useEffect(() => {
+    fetchAccessControl();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [studentId]);
 
   return (
     <div className="bg-white p-6 rounded-xl shadow text-sm space-y-4">

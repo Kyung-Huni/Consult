@@ -1,27 +1,60 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import axios from '../../api/axios';
 
-export default function StudentToDoSection({ todo = [] }) {
-  const [items, setItems] = useState(todo);
-  const [newText, setNewText] = useState(''); // Input 값을 상태로 제어, Controlled Component
+export default function StudentToDoSection({ studentId }) {
+  const [items, setItems] = useState([]);
+  const [newText, setNewText] = useState('');
+  const [dueDate, setDueDate] = useState('');
   const [showInput, setInput] = useState(false);
 
-  const toggleItem = (id) => {
-    setItems((prev) => prev.map((item) => (item.id === id ? { ...item, done: !item.done } : item)));
+  const fetchToDo = async () => {
+    try {
+      const res = await axios.get(`/students/${studentId}/todo`);
+      setItems(res.data);
+    } catch (err) {
+      console.error('할 일 불러오기 실패:', err);
+    }
   };
 
-  const addItem = () => {
-    if (!newText.trim()) return; // 문자열 앞뒤 공백 제거 (공백 무시 조건)
-    const newItem = {
-      id: Date.now(),
-      text: newText,
-      done: false,
-    };
-    setItems((prev) => [...prev, newItem]);
-    setNewText('');
+  useEffect(() => {
+    fetchToDo();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [studentId]);
+
+  const addItem = async () => {
+    if (!newText.trim() || !dueDate) return;
+    try {
+      await axios.post(`/students/${studentId}/todo`, {
+        text: newText,
+        due: dueDate,
+      });
+      setNewText('');
+      setDueDate('');
+      setInput(false);
+      fetchToDo();
+    } catch (err) {
+      console.error('할 일 추가 실패:', err);
+    }
   };
 
-  const deleteItem = (id) => {
-    setItems((prev) => prev.filter((item) => item.id !== id));
+  const toggleItem = async (id, currentState) => {
+    try {
+      await axios.patch(`/students/${studentId}/todo/${id}`, {
+        done: !currentState,
+      });
+      fetchToDo();
+    } catch (err) {
+      console.error('업데이트 실패:', err);
+    }
+  };
+
+  const deleteItem = async (id) => {
+    try {
+      await axios.delete(`/students/${studentId}/todo/${id}`);
+      fetchToDo();
+    } catch (err) {
+      console.error('삭제 실패:', err);
+    }
   };
 
   return (
@@ -42,9 +75,17 @@ export default function StudentToDoSection({ todo = [] }) {
         <ul className="space-y-2 text-sm mb-4">
           {items.map((item) => (
             <li key={item.id} className="flex items-center gap-2">
-              <input type="checkbox" checked={item.done} onChange={() => toggleItem(item.id)} />
-              <span className={item.done ? 'line-through text-gray-400' : ''}>{item.text}</span>
-              <span className="ml-auto text-xs text-gray-400">Due: {item.due}</span>
+              <input
+                type="checkbox"
+                checked={item.done}
+                onChange={() => toggleItem(item.id, item.done)}
+              />
+              <span className={item.done ? 'line-through text-gray-400' : ''}>
+                {item.text}
+              </span>
+              <span className="ml-auto text-xs text-gray-400">
+                Due: {item.due.slice(0, 10)}
+              </span>
               <button
                 onClick={() => deleteItem(item.id)}
                 className="text-red-400 hover:text-red-600 text-sm"
@@ -63,7 +104,13 @@ export default function StudentToDoSection({ todo = [] }) {
             value={newText}
             onChange={(e) => setNewText(e.target.value)}
             className="flex-1 min-w-0 border rounded px-2 py-1 text-sm"
-            placeholder="새 항목 입력"
+            placeholder="할 일 제목"
+          />
+          <input
+            type="date"
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
+            className="shrink-0 border rounded px-2 py-1 text-sm"
           />
           <button
             onClick={addItem}

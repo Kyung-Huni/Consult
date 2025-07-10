@@ -1,10 +1,16 @@
+import { useEffect, useState } from 'react';
+import axios from '../api/axios';
 import MeetingCard from '../sections/meeting/MeetingCard';
 
 export default function Meetings() {
-  const meetings = [
-    { id: 1, student: '김지훈', date: '2025-06-18', summary: 'Essay 피드백 회의' },
-    { id: 2, student: '이수민', date: '2025-06-19', summary: '대학 선택 상담' },
-  ];
+  const [meetings, setMeetings] = useState([]);
+
+  useEffect(() => {
+    axios
+      .get('/meetings')
+      .then((res) => setMeetings(res.data))
+      .catch((err) => console.error('❌ 회의 불러오기 실패:', err));
+  }, []);
 
   return (
     <div className="space-y-4">

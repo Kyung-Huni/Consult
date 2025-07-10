@@ -16,7 +16,7 @@ import { asyncHandler } from '../utils/asyncHandler';
 
 // Errors
 import AuthError from '../errors/AuthError';
-import UserNotFoundError from '../errors/UserNotFoundError';
+import UserNotFoundError from '../errors/NotFoundError';
 
 // Validation Schema
 import { getUserParamsSchema } from '../schemas/user/getUserParamsSchema';

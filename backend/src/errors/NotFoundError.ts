@@ -1,6 +1,6 @@
 import { CustomError } from './CustomError';
 
-export default class UserNotFoundError extends CustomError {
+export default class NotFoundError extends CustomError {
   private static readonly _statusCode = 400;
   private readonly _code: number;
   private readonly _logging: boolean;
@@ -14,13 +14,13 @@ export default class UserNotFoundError extends CustomError {
   }) {
     const { code, message, logging } = params || {};
 
-    super(message || 'User not found.');
-    this._code = code || UserNotFoundError._statusCode;
+    super(message || 'Not found.');
+    this._code = code || NotFoundError._statusCode;
     this._logging = logging || false;
     this._context = params?.context || {};
 
     // Only because we are extending a built in class
-    Object.setPrototypeOf(this, UserNotFoundError.prototype);
+    Object.setPrototypeOf(this, NotFoundError.prototype);
   }
 
   get errors() {
