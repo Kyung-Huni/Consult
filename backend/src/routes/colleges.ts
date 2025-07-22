@@ -14,6 +14,17 @@ import {
 dotenv.config();
 const router = Router({ mergeParams: true });
 
+type CollegeAPIResponse = {
+  results: {
+    id: number;
+    school: {
+      name: string;
+      city: string;
+      state: string;
+    };
+  }[];
+};
+
 // GET /colleges?limit=1000&name=harv
 router.get(
   '/',
@@ -42,7 +53,7 @@ router.get(
   asyncHandler(async (req, res) => {
     const { name } = req.query;
     try {
-      const response = await axios.get(
+      const response = await axios.get<CollegeAPIResponse>(
         'https://api.data.gov/ed/collegescorecard/v1/schools.json',
         {
           params: {
