@@ -53,7 +53,7 @@ app.use(
   cors({
     origin: [
       'http://localhost:3000',
-      'https://consult-7ue12fhnj-leekyunghuns-projects.vercel.app/login',
+      'https://consult-7ue12fhnj-leekyunghuns-projects.vercel.app',
     ],
     credentials: true,
   })

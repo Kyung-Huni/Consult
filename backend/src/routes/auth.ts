@@ -148,6 +148,8 @@ router.post(
   asyncHandler(async (req: Request, res: Response) => {
     const token = req.cookies.refreshToken;
 
+    console.log('Refresh 요청 도착!', req.cookies); // 또는 req.headers
+
     if (!token) {
       throw new UnauthorizedError({ message: 'Refresh token missing' });
     }
