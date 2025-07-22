@@ -51,10 +51,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: [
-      'http://localhost:3000',
-      'https://consult-7ue12fhnj-leekyunghuns-projects.vercel.app',
-    ],
+    origin: 'https://consult-7ue12fhnj-leekyunghuns-projects.vercel.app',
     credentials: true,
   })
 );
