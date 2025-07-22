@@ -7,6 +7,7 @@ export const createTemplateSchema = yup.object({
     .required(),
   title: yup.string().required(),
   content: yup.string().required(),
+  summary: yup.string().max(200).optional(),
 });
 
 export type CreateStudentInput = yup.InferType<typeof createTemplateSchema>;

@@ -1,7 +1,10 @@
-import { Router } from 'express';
+import { Router, Response } from 'express';
 import { prisma } from '../prisma';
 
-import { authenticateJWT } from '../middlewares/authMiddleware';
+import {
+  AuthenticatedRequest,
+  authenticateJWT,
+} from '../middlewares/authMiddleware';
 import { validateParams } from '../middlewares/validateParams';
 import { validateBody } from '../middlewares/validateBody';
 
@@ -10,6 +13,7 @@ import { asyncHandler } from '../utils/asyncHandler';
 import { createStudentSchema } from '../schemas/student/createStudentSchema';
 import { updateAccessSchema } from '../schemas/student/updateAccessSchema';
 import { getStudentParamsSchema } from '../schemas/student/getStudentParamsSchema';
+import EmailAlreadyExistsError from '../errors/EmailAlreadyExistsError';
 
 const router = Router({ mergeParams: true });
 
@@ -28,10 +32,45 @@ router.get(
 
 router.post(
   '/',
+  authenticateJWT,
   validateBody(createStudentSchema),
-  asyncHandler(async (req, res) => {
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user?.id) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+
+    const userId = req.user.id;
+    const { name, email, phone, school, grade, allowLogin, canEditChecklist } =
+      req.body;
+
+    const existing = await prisma.student.findUnique({ where: { email } });
+    if (existing) {
+      throw new EmailAlreadyExistsError();
+    }
+
     const newStudent = await prisma.student.create({
-      data: req.body,
+      data: {
+        name,
+        email,
+        phone,
+        school,
+        grade,
+        allowLogin,
+        canEditChecklist,
+        userId,
+        contactinfo: {
+          create: {
+            email,
+            phone,
+            school,
+            grade,
+          },
+        },
+      },
+      include: {
+        contactinfo: true,
+      },
     });
 
     res.status(201).json(newStudent);
@@ -54,6 +93,21 @@ router.get(
     }
 
     res.json(student);
+  })
+);
+
+router.delete(
+  '/:id',
+  validateParams(getStudentParamsSchema),
+  authenticateJWT,
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    await prisma.student.delete({
+      where: { id },
+    });
+
+    res.status(204).send(); // No Content
   })
 );
 

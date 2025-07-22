@@ -15,8 +15,6 @@ router.get(
   '/',
   validateParams(getStudentParamsSchema),
   asyncHandler(async (req, res) => {
-    console.log('📌 req.params:', req.params); // 👈 확인해보자
-
     const { id } = req.params;
     const meetings = await prisma.meeting.findMany({
       where: { studentId: id },

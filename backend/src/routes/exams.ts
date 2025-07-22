@@ -38,8 +38,6 @@ router.post(
   validateParams(getStudentParamsSchema),
   // validateBody(createExamSchema), 나중에 조정 후 추가
   asyncHandler(async (req, res) => {
-    console.log('headers:', req.headers);
-    console.log('raw body:', req.body);
     const { id } = req.params;
     const { type, date, scores } = req.body;
 

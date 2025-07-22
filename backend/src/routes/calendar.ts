@@ -25,15 +25,17 @@ router.get(
         type: 'meeting',
         color: 'blue',
         studentId: m.studentId,
+        studentName: m.student.name,
       })),
       ...checklists.map((c) => ({
         id: `checklist-${c.id}`,
-        title: `${c.student.name} 마감: ${c.title}`,
+        title: `${c.title}`,
         start: c.dueDate,
         allDay: true,
         type: 'checklist',
         color: 'orange',
         studentId: c.studentId,
+        studentName: c.student.name,
       })),
     ];
 

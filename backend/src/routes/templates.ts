@@ -28,7 +28,7 @@ router.get(
   })
 );
 
-// 단일 템플릿 조회
+// ✅ 단일 템플릿 조회
 router.get(
   '/:id',
   asyncHandler(async (req, res) => {
@@ -46,10 +46,10 @@ router.post(
   '/',
   validateBody(createTemplateSchema),
   asyncHandler(async (req, res) => {
-    const { type, title, content } = req.body;
+    const { type, title, content, summary } = req.body;
 
     const created = await prisma.template.create({
-      data: { type, title, content },
+      data: { type, title, content, summary },
     });
 
     res.status(201).json(created);
@@ -63,11 +63,11 @@ router.put(
   validateBody(updateTemplateSchema),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const { title, content } = req.body;
+    const { title, content, summary } = req.body;
 
     const updated = await prisma.template.update({
       where: { id },
-      data: { title, content },
+      data: { title, content, summary },
     });
 
     res.json(updated);
