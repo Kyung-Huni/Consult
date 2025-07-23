@@ -51,7 +51,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: 'https://consult-7ue12fhnj-leekyunghuns-projects.vercel.app',
+    origin: 'https://consult-tau.vercel.app',
     credentials: true,
   })
 );
